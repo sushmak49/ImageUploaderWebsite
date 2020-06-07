@@ -36,6 +36,7 @@ public class ImageController {
         return "images";
     }
 
+
     //This method is called when the details of the specific image with corresponding title are to be displayed
     //The logic is to get the image from the databse with corresponding title. After getting the image from the database the details are shown
     //First receive the dynamic parameter in the incoming request URL in a string variable 'title' and also the Model type object
@@ -49,9 +50,12 @@ public class ImageController {
     @RequestMapping("/images/{imageId}/{title}")
     public String showImage(@PathVariable("title") String title,@PathVariable("imageId") Integer id, Model model) {
        // Image image = imageService.getImageByTitle(title);
+
         Image image = imageService.getImage(id);
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        //adding commentList to the model object
+        model.addAttribute("comments",image.getCommentList());
         return "images/image";
     }
 
@@ -114,6 +118,7 @@ public class ImageController {
             model.addAttribute("image", image);
             model.addAttribute("tag", tags);
             model.addAttribute("editError",error);
+            model.addAttribute("comments",image.getCommentList());
             return "images/image";
         } else {
             //If user is owner, allow user to edit the image, direct to edit image page.
@@ -181,6 +186,7 @@ public class ImageController {
             model.addAttribute("image",image);
             model.addAttribute("tags",image.getTags());
             model.addAttribute("deleteError",error);
+            model.addAttribute("comments",image.getCommentList());
             return "images/image";
         } else {
             //Logged in user and image owner are same, allow user to delete and then redirect user to the home page displaying all images
