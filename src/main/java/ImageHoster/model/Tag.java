@@ -18,7 +18,7 @@ public class Tag {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column
+    @Column(name="name")
     private String name;
 
     // Write the annotation for many to many between images and tags where they are mapped by tags field in the images table

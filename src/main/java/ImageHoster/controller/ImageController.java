@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.*;
@@ -36,6 +37,7 @@ public class ImageController {
         return "images";
     }
 
+
     //This method is called when the details of the specific image with corresponding title are to be displayed
     //The logic is to get the image from the databse with corresponding title. After getting the image from the database the details are shown
     //First receive the dynamic parameter in the incoming request URL in a string variable 'title' and also the Model type object
@@ -46,12 +48,18 @@ public class ImageController {
     //Also now you need to add the tags of an image in the Model type object
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
-    @RequestMapping("/images/{imageId}/{title}")
-    public String showImage(@PathVariable("title") String title,@PathVariable("imageId") Integer id, Model model) {
+    @RequestMapping(value = "/images/{imageId}/{title}")
+    public String showImage(@PathVariable("title") String title,@PathVariable("imageId") String id, Model model) {
        // Image image = imageService.getImageByTitle(title);
-        Image image = imageService.getImage(id);
+
+        System.out.println("image id:"+id);
+        Integer intId =Integer.parseInt(id);
+        Image image = imageService.getImage(intId);
+
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        //adding commentList to the model object
+        model.addAttribute("comments",image.getCommentList());
         return "images/image";
     }
 
@@ -105,24 +113,30 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         //get users's userId associated with the image object.
         Integer ownerId = image.getUser().getId();
+        //If the size of List of tags is 0, user should still be able to edit image. convertTagsToString method should not throw exception.
+        String tags = null;
+        if(image.getTags().size()!=0) {
+            tags = convertTagsToString(image.getTags());
+        }
 
         //check if owner is same as editor
         if (ownerId!=userId) {
             //Logged in user and user associated with image are not same
             //Pass editError so that user cannot edit image and user is directed to same page again.
-            String tags = convertTagsToString(image.getTags());
+
             model.addAttribute("image", image);
-            model.addAttribute("tag", tags);
+            model.addAttribute("tags", image.getTags());
             model.addAttribute("editError",error);
+            model.addAttribute("comments",image.getCommentList());
             return "images/image";
         } else {
             //If user is owner, allow user to edit the image, direct to edit image page.
-            String tags = convertTagsToString(image.getTags());
-            model.addAttribute("image", image);
-            model.addAttribute("tag", tags);
+                model.addAttribute("image", image);
+                model.addAttribute("tags", tags);
+            }
+
             return "images/edit";
         }
-    }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
     //The method receives the imageFile, imageId, updated image, along with the Http Session
@@ -155,7 +169,10 @@ public class ImageController {
         updatedImage.setDate(new Date());
 
         imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+        model.addAttribute("imageId",imageId);
+        //return "/images/"+updatedImage.getId()+"/"+updatedImage.getTitle();
+        //return "redirect:/images/"+ updatedImage.getTitle();
+        return "redirect:/images/"+imageId+"/"+updatedImage.getTitle();
 
     }
 
@@ -181,6 +198,7 @@ public class ImageController {
             model.addAttribute("image",image);
             model.addAttribute("tags",image.getTags());
             model.addAttribute("deleteError",error);
+            model.addAttribute("comments",image.getCommentList());
             return "images/image";
         } else {
             //Logged in user and image owner are same, allow user to delete and then redirect user to the home page displaying all images

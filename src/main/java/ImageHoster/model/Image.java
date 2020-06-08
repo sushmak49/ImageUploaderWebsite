@@ -51,6 +51,12 @@ public class Image {
     @ManyToMany(fetch = FetchType.LAZY)
     private List<Tag> tags = new ArrayList<>();
 
+    //The attribute contains a list of all the comments on an image
+    //Mapping is One to Many, therefore the image column in comments references the primary key of Image table i.e. id of images table
+    //Cascade type is Remove, the commentList is removed if the image is deleted
+    @OneToMany(mappedBy = "image",cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    private List<Comment> commentList = new ArrayList<>();
+
     public Image() {
     }
 
@@ -126,4 +132,13 @@ public class Image {
     public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
+
+    public List<Comment> getCommentList() {
+        return commentList;
+    }
+
+    public void setCommentList(List<Comment> commentList) {
+        this.commentList = commentList;
+    }
+
 }
