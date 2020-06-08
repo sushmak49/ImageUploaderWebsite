@@ -52,10 +52,12 @@ public class ImageController {
     public String showImage(@PathVariable("title") String title,@PathVariable("imageId") String id, Model model) {
        // Image image = imageService.getImageByTitle(title);
 
-        System.out.println("image id:"+id);
+        //Converting the id which is received as a String in path parameter to Integer
         Integer intId =Integer.parseInt(id);
+        //Fetch the image from database using imageId
         Image image = imageService.getImage(intId);
 
+        //Send image,tags and comments as model to display in image.html file
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
         //adding commentList to the model object
@@ -116,26 +118,29 @@ public class ImageController {
         //If the size of List of tags is 0, user should still be able to edit image. convertTagsToString method should not throw exception.
         String tags = null;
         if(image.getTags().size()!=0) {
+            //If TagsList size is not 0, only then pass it to convertTagsToString to avoid ArrayIndexOutOfBoundsException
             tags = convertTagsToString(image.getTags());
         }
 
-        //check if owner is same as editor
+        //check if owner of image is same as editor
         if (ownerId!=userId) {
+
             //Logged in user and user associated with image are not same
             //Pass editError so that user cannot edit image and user is directed to same page again.
-
             model.addAttribute("image", image);
             model.addAttribute("tags", image.getTags());
             model.addAttribute("editError",error);
             model.addAttribute("comments",image.getCommentList());
             return "images/image";
         } else {
-            //If user is owner, allow user to edit the image, direct to edit image page.
-                model.addAttribute("image", image);
-                model.addAttribute("tags", tags);
-            }
 
-            return "images/edit";
+            //If user is owner, allow user to edit the image, direct to edit image page.
+            model.addAttribute("image", image);
+            model.addAttribute("tags", tags);
+        }
+
+        //Direct user to edit.html page in case user has access to edit
+        return "images/edit";
         }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
@@ -156,9 +161,9 @@ public class ImageController {
         String updatedImageData = convertUploadedFileToBase64(file);
         List<Tag> imageTags = findOrCreateTags(tags);
 
-        if (updatedImageData.isEmpty())
+        if (updatedImageData.isEmpty()) {
             updatedImage.setImageFile(image.getImageFile());
-        else {
+        } else {
             updatedImage.setImageFile(updatedImageData);
         }
 
@@ -170,8 +175,7 @@ public class ImageController {
 
         imageService.updateImage(updatedImage);
         model.addAttribute("imageId",imageId);
-        //return "/images/"+updatedImage.getId()+"/"+updatedImage.getTitle();
-        //return "redirect:/images/"+ updatedImage.getTitle();
+        //Changed the String to match the request URL in showImage method
         return "redirect:/images/"+imageId+"/"+updatedImage.getTitle();
 
     }
@@ -192,7 +196,7 @@ public class ImageController {
         Image image = imageService.getImage(imageId);
         Integer ownerId = image.getUser().getId();
 
-        //check if owner of image and user trying to logged in user are same
+        //check if owner of image and user trying to delete the image i.e. logged in user are same
         if (ownerId!=userId) {
             //Pass deleteError string in model, to display error message on directing to same page.
             model.addAttribute("image",image);
@@ -205,7 +209,6 @@ public class ImageController {
             imageService.deleteImage(imageId);
             return "redirect:/images";
         }
-
 
     }
 

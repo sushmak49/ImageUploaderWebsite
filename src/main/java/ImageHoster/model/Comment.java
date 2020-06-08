@@ -18,12 +18,12 @@ public class Comment {
     @Column(name="created_date")
     private Date createdDate;
 
-    //foreign key column user_id that refernces primary key of users table
+    //foreign key column user_id that references primary key of users table
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="user_id")
     private User user;
 
-    //foreign key column image_id that refernces primary key of images table
+    //foreign key column image_id that references primary key of images table
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="image_id")
     private Image image;
