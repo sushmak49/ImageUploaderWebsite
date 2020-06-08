@@ -1,4 +1,4 @@
-/*
+
 package ImageHoster.controller;
 
 import ImageHoster.service.ImageService;
@@ -35,5 +35,6 @@ public class HomeControllerTest {
                 .andExpect(view().name("index"))
                 .andExpect(content().string(containsString("Image Hoster")));
     }
+
 }
-*/
+
